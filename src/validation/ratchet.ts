@@ -19,13 +19,16 @@ export function validate(ctx: ProjectContext, items: BOQLineItem[]) {
 // Ratchet - 변경 감지
 export function ratchetCheck(prev: BOQLineItem[], curr: BOQLineItem[]) {
   const changes = [];
-  for (let i=0;i<curr.length;i++) {
-    if (prev[i]?.수량.value !== curr[i].수량.value) {
-      const diff = curr[i].수량.value - (prev[i]?.수량.value||0);
+  for (let i = 0; i < curr.length; i++) {
+    const p = prev[i];
+    const c = curr[i];
+    if (!c) continue;
+    if (p?.수량.value !== c.수량.value) {
+      const diff = c.수량.value - (p?.수량.value || 0);
       if (diff < 0) {
-        changes.push({ id: curr[i].id, type: "DOWNGRADE", diff, requiresApproval: true });
+        changes.push({ id: c.id, type: "DOWNGRADE" as const, diff, requiresApproval: true });
       } else {
-        changes.push({ id: curr[i].id, type: "UPGRADE", diff, requiresApproval: false });
+        changes.push({ id: c.id, type: "UPGRADE" as const, diff, requiresApproval: false });
       }
     }
   }

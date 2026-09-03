@@ -56,5 +56,5 @@ export function finalGrade(areaGrade: string, budgetGrade: string): string {
   const a = order.indexOf(areaGrade);
   const b = order.indexOf(budgetGrade);
   if (b === 0) return areaGrade; // 예산 미입력이면 면적 가등급
-  return order[Math.max(a,b)];
+  return order[Math.max(a, b)] ?? "미입력";
 }
