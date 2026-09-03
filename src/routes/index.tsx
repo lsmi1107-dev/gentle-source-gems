@@ -18,7 +18,7 @@ import {
 } from "../domain/types";
 import { calculateAll } from "../calc/quantityEngine";
 import { validate, ratchetCheck, snapshot } from "../validation/ratchet";
-import { toExcelRows } from "../io/excelExporter";
+import { exportSummarySheet } from "../io/excelExporter";
 
 export const Route = createFileRoute("/")({
   head: () => ({
