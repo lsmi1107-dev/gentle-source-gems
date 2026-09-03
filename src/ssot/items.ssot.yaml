@@ -1,0 +1,117 @@
+- id: TEMP-001
+  품명: 조립식가설사무소/감리,감독자
+  규격: 3.0*6.0, 1동
+  단위: 식
+  산출식:
+    formula: '1'
+    inputs: []
+    description: 현장 1개소 고정
+    logic: 1식 고정
+  수량:
+    value: 1
+    logic: 고정
+  비고: 감리/감독자용
+- id: TEMP-002
+  품명: 조립식가설창고
+  규격: ''
+  단위: 식
+  산출식:
+    formula: IF(연면적>=10000, 2, 1)
+    inputs:
+    - 연면적
+    description: 연면적 10000㎡ 이상 2식
+    logic: 연면적 기준
+  수량:
+    value: 1
+    logic: 연면적 기준
+  비고: ''
+- id: TEMP-003
+  품명: 조립식가설사무소 / 도급자용
+  규격: ''
+  단위: 식
+  산출식:
+    formula: CEIL(연면적/4000)
+    inputs:
+    - 연면적
+    - 지상층수
+    - 구조
+    description: 연면적 4000㎡당 1동, 철골조면 +1
+    logic: CEIL(연면적/4000)
+  수량:
+    value: 1
+    logic: 연면적 기준
+  비고: ''
+- id: TEMP-004
+  품명: 조립식가설실험실
+  규격: ''
+  단위: 식
+  산출식:
+    formula: IF(연면적>=5000, 1, 0)
+    inputs:
+    - 연면적
+    - 건물용도
+    description: 연면적 5000㎡ 이상 1식
+    logic: 연면적>=5000
+  수량:
+    value: 1
+    logic: 연면적 기준
+  비고: ''
+- id: TEMP-005
+  품명: 이동식화장실(대소변겸용)
+  규격: ''
+  단위: 식
+  산출식:
+    formula: MAX(1, CEIL(연면적/2000) + CEIL(지상층수/10) -1)
+    inputs:
+    - 연면적
+    - 지상층수
+    description: 연면적+층수 기준, 최소 1식 (월평균노무자수 삭제됨)
+    logic: 연면적/2000 + 층수/10
+  수량:
+    value: 1
+    logic: 연면적+층수
+  비고: ''
+- id: TEMP-006
+  품명: 자동세륜기 설치 및 해체 - 8륜
+  규격: 8륜
+  단위: 식
+  산출식:
+    formula: IF(지하층수>=1, 1, 1)
+    inputs:
+    - 지하층수
+    - 구조
+    description: 지하층 있으면 필수 1식
+    logic: 고정 1식
+  수량:
+    value: 1
+    logic: 고정
+  비고: ''
+- id: TEMP-007
+  품명: 조립식가설울타리
+  규격: EGI철판, H6.0
+  단위: 식
+  산출식:
+    formula: 4 * SQRT(대지면적)
+    inputs:
+    - 대지면적
+    description: 연장(m)=4*SQRT(대지면적), 형상보정계수 삭제됨
+    logic: 대지둘레 추정
+  수량:
+    value: 1
+    logic: 식이지만 비고에 L= m 표기
+  비고: L= 자동계산
+- id: TEMP-008
+  품명: 조립식가설출입문
+  규격: EGI철판, W6.0*H6.0
+  단위: 식
+  산출식:
+    formula: IF(대지면적>=3000, 1, 1)
+    inputs:
+    - 대지면적
+    - 건물용도
+    description: 대지면적 3000㎡ 이상시 1식(공장은 W8.0)
+    logic: 고정 1식
+  수량:
+    value: 1
+    logic: 고정
+  비고: ''
