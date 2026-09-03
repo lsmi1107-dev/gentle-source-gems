@@ -18,7 +18,7 @@ import {
 } from "../domain/types";
 import { calculateAll } from "../calc/quantityEngine";
 import { validate, ratchetCheck, snapshot } from "../validation/ratchet";
-import { toExcelRows } from "../io/excelExporter";
+import { exportSummarySheet } from "../io/excelExporter";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -109,16 +109,38 @@ function Index() {
     setEditing(null);
   };
 
-  const downloadCsv = () => {
-    const { header, rows } = toExcelRows(items);
-    const csv = [header, ...rows]
-      .map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(","))
-      .join("\n");
-    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
+  const downloadXlsx = async () => {
+    const blob = await exportSummarySheet(
+      items.map((it) => ({
+        code: it.id,
+        name: it.품명,
+        spec: it.규격,
+        unit: it.단위,
+        quantity:
+          it.id === "TEMP-007" && it.수량.detail
+            ? Number(it.수량.detail.replace(/[^0-9.]/g, "")) || it.수량.value
+            : it.수량.value,
+        matUnit: it.재료비?.단가 ?? 0,
+        laborUnit: it.노무비?.단가 ?? 0,
+        expUnit: it.경비?.단가 ?? 0,
+        formula: it.산출식.formula,
+        remark: it.비고,
+      })),
+      {
+        projectName: "Lab Estimate",
+        siteArea: ctx.대지면적,
+        grossArea: ctx.연면적,
+        buildingUse: ctx.건물용도,
+        structure: ctx.구조,
+        groundFloors: ctx.지상층수,
+        undergroundFloors: ctx.지하층수,
+        durationMonths: ctx.공사기간,
+      },
+    );
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "가설공사_SummarySheet.csv";
+    a.download = "가설공사_SummarySheet.xlsx";
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -160,11 +182,11 @@ function Index() {
             </div>
           </div>
           <button
-            onClick={downloadCsv}
+            onClick={downloadXlsx}
             className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             <Download className="h-4 w-4" />
-            Summary Sheet (CSV)
+            Summary Sheet (XLSX)
           </button>
         </div>
       </header>
