@@ -19,6 +19,7 @@ import {
 import { calculateAll } from "../calc/quantityEngine";
 import { validate, ratchetCheck, snapshot } from "../validation/ratchet";
 import { exportSummarySheet } from "../io/excelExporter";
+import ItemDetailModal from "../components/ItemDetailModal";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -68,6 +69,7 @@ function Index() {
   const [overrides, setOverrides] = useState<Record<string, LineItemFormula>>({});
   const [editing, setEditing] = useState<FormulaEdit | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [detailId, setDetailId] = useState<string | null>(null);
   const prevSnapshot = useRef<BOQLineItem[] | null>(null);
   const [changes, setChanges] = useState<
     ReturnType<typeof ratchetCheck>
