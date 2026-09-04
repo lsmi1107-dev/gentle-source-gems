@@ -11,6 +11,8 @@ export interface ProjectContext {
   공사기간: number; // 개월
   건물외주?: number; // m
   총공사비?: number; // VAT별도
+  컨테이너6수?: number; // 3.0*6.0 (18㎡) 컨테이너 동수
+  컨테이너9수?: number; // 3.0*9.0 (27㎡) 컨테이너 동수
 }
 
 export interface LineItemFormula {
