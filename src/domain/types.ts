@@ -13,6 +13,10 @@ export interface ProjectContext {
   총공사비?: number; // VAT별도
   컨테이너6수?: number; // 3.0*6.0 (18㎡) 컨테이너 동수
   컨테이너9수?: number; // 3.0*9.0 (27㎡) 컨테이너 동수
+  임대료6?: number; // 3.0*6.0 월 임대료(원)
+  임대료9?: number; // 3.0*9.0 월 임대료(원)
+  설치해체비?: number; // 원
+  운반비?: number; // 원
 }
 
 export interface LineItemFormula {
