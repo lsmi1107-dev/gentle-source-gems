@@ -95,6 +95,10 @@ function Index() {
   };
 
   const openEditor = (item: BOQLineItem) => {
+    if (item.id === "TEMP-001" || item.id === "TEMP-003") {
+      setDetailId(item.id);
+      return;
+    }
     setEditingId(item.id);
     setEditing({ formula: { ...item.산출식 } });
   };
