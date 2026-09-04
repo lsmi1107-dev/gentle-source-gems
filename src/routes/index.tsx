@@ -55,6 +55,8 @@ const DEFAULT_CTX: ProjectContext = {
   최고높이: 60,
   공사기간: 12,
   총공사비: 0,
+  컨테이너6수: 1,
+  컨테이너9수: 1,
 };
 
 interface FormulaEdit {
@@ -237,6 +239,14 @@ function Index() {
               {numInput("최고높이", "최고높이", "m")}
               {numInput("공사기간", "공사기간", "개월")}
               {numInput("총공사비 (VAT별도)", "총공사비", "원")}
+              <div className="grid grid-cols-2 gap-3">
+                {numInput("컨테이너 3.0×6.0 (18㎡)", "컨테이너6수", "동")}
+                {numInput("컨테이너 3.0×9.0 (27㎡)", "컨테이너9수", "동")}
+              </div>
+              <p className="rounded-md bg-muted px-2.5 py-1.5 text-[11px] text-muted-foreground">
+                혼합배치 totalArea ={" "}
+                {(ctx.컨테이너6수 ?? 0) * 18 + (ctx.컨테이너9수 ?? 0) * 27}㎡
+              </p>
             </div>
           </div>
 
