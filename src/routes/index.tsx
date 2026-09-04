@@ -425,6 +425,23 @@ function Index() {
         </section>
       </main>
 
+      {/* TEMP-001/003 상세 산출 모달 */}
+      {detailId &&
+        (() => {
+          const target = items.find((i) => i.id === detailId);
+          if (!target) return null;
+          return (
+            <ItemDetailModal
+              item={target}
+              ctx={ctx}
+              onChange={(patch) => recalcWithRatchet({ ...ctx, ...patch })}
+              onClose={() => setDetailId(null)}
+            />
+          );
+        })()}
+
+
+
       {/* 산출식 편집 모달 */}
       {editingId && editing && (
         <div
