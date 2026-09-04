@@ -19,6 +19,7 @@ import {
 import { calculateAll } from "../calc/quantityEngine";
 import { validate, ratchetCheck, snapshot } from "../validation/ratchet";
 import { exportSummarySheet } from "../io/excelExporter";
+import ItemDetailModal from "../components/ItemDetailModal";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -68,6 +69,7 @@ function Index() {
   const [overrides, setOverrides] = useState<Record<string, LineItemFormula>>({});
   const [editing, setEditing] = useState<FormulaEdit | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [detailId, setDetailId] = useState<string | null>(null);
   const prevSnapshot = useRef<BOQLineItem[] | null>(null);
   const [changes, setChanges] = useState<
     ReturnType<typeof ratchetCheck>
@@ -95,6 +97,10 @@ function Index() {
   };
 
   const openEditor = (item: BOQLineItem) => {
+    if (item.id === "TEMP-001" || item.id === "TEMP-003") {
+      setDetailId(item.id);
+      return;
+    }
     setEditingId(item.id);
     setEditing({ formula: { ...item.산출식 } });
   };
@@ -112,22 +118,35 @@ function Index() {
   };
 
   const downloadXlsx = async () => {
+    const c6 = ctx.컨테이너6수 ?? 0;
+    const c9 = ctx.컨테이너9수 ?? 0;
+    const monthlyRent = c6 * (ctx.임대료6 ?? 0) + c9 * (ctx.임대료9 ?? 0);
+    const rentTotal = monthlyRent * ctx.공사기간;
     const blob = await exportSummarySheet(
-      items.map((it) => ({
-        code: it.id,
-        name: it.품명,
-        spec: it.규격,
-        unit: it.단위,
-        quantity:
-          it.id === "TEMP-007" && it.수량.detail
-            ? Number(it.수량.detail.replace(/[^0-9.]/g, "")) || it.수량.value
-            : it.수량.value,
-        matUnit: it.재료비?.단가 ?? 0,
-        laborUnit: it.노무비?.단가 ?? 0,
-        expUnit: it.경비?.단가 ?? 0,
-        formula: it.산출식.formula,
-        remark: it.비고,
-      })),
+      items.map((it) => {
+        const isContainer = it.id === "TEMP-001" || it.id === "TEMP-003";
+        return {
+          code: it.id,
+          name: it.품명,
+          spec: it.규격,
+          unit: it.단위,
+          quantity: isContainer
+            ? 1
+            : it.id === "TEMP-007" && it.수량.detail
+              ? Number(it.수량.detail.replace(/[^0-9.]/g, "")) || it.수량.value
+              : it.수량.value,
+          matUnit: it.재료비?.단가 ?? 0,
+          laborUnit: isContainer ? (ctx.설치해체비 ?? 0) : (it.노무비?.단가 ?? 0),
+          expUnit: isContainer
+            ? rentTotal + (ctx.운반비 ?? 0)
+            : (it.경비?.단가 ?? 0),
+          formula: it.산출식.formula,
+          remark: isContainer
+            ? `${it.비고} 임대료 ${monthlyRent.toLocaleString("ko-KR")}원/월 × ${ctx.공사기간}개월`.trim()
+            : it.비고,
+        };
+      }),
+
       {
         projectName: "Lab Estimate",
         siteArea: ctx.대지면적,
@@ -405,6 +424,23 @@ function Index() {
           </div>
         </section>
       </main>
+
+      {/* TEMP-001/003 상세 산출 모달 */}
+      {detailId &&
+        (() => {
+          const target = items.find((i) => i.id === detailId);
+          if (!target) return null;
+          return (
+            <ItemDetailModal
+              item={target}
+              ctx={ctx}
+              onChange={(patch) => recalcWithRatchet({ ...ctx, ...patch })}
+              onClose={() => setDetailId(null)}
+            />
+          );
+        })()}
+
+
 
       {/* 산출식 편집 모달 */}
       {editingId && editing && (
