@@ -45,7 +45,7 @@ export function calculateAll(
       const c6 = ctx.컨테이너6수 ?? 0;
       const c9 = ctx.컨테이너9수 ?? 0;
       const totalArea = c6 * 18 + c9 * 27;
-      규격 = `3.0*6.0 ×${c6} + 3.0*9.0 ×${c9} (totalArea=${totalArea}㎡)`;
+      규격 = `3.0*6.0 x${c6} + 3.0*9.0 x${c9} (totalArea ${totalArea}㎡)`;
       if (Number.isNaN(val)) qty = 0;
       else qty = Math.max(0, Math.round(val));
       return {
