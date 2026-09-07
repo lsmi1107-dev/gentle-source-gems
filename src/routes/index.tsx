@@ -20,6 +20,13 @@ import { calculateAll } from "../calc/quantityEngine";
 import { validate, ratchetCheck, snapshot } from "../validation/ratchet";
 import { exportSummarySheet } from "../io/excelExporter";
 import ItemDetailModal from "../components/ItemDetailModal";
+import {
+  containerCost,
+  requiredArea,
+  resolveCounts,
+  specLabel,
+} from "../calc/containerPlan";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({

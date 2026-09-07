@@ -99,8 +99,9 @@ export async function exportSummarySheet(
     const matAmt = item.quantity * item.matUnit;
     const laborAmt = item.quantity * item.laborUnit;
     const expAmt = item.quantity * item.expUnit;
-    const totalUnit = item.matUnit + item.laborUnit + item.expUnit;
-    const totalAmt = matAmt + laborAmt + expAmt;
+    const totalAmt = item.totalCost ?? matAmt + laborAmt + expAmt;
+    const totalUnit = item.quantity ? totalAmt / item.quantity : totalAmt;
+
 
     // 수식 있는 경우 비고에 표시 - 특히 TEMP-007
     let remark = item.remark || '';
