@@ -1,15 +1,14 @@
-import { Minus, Plus, X } from "lucide-react";
+import { Minus, Plus, Trash2, X } from "lucide-react";
 import type { BOQLineItem, ProjectContext } from "../domain/types";
+import {
+  AREA6,
+  AREA9,
+  containerCost,
+  requiredArea,
+  resolveCounts,
+} from "../calc/containerPlan";
 
-export function requiredArea(id: string, 연면적: number): number {
-  const set =
-    id === "TEMP-003" ? [12, 48, 100, 120, 200] : [6, 30, 63, 76, 130];
-  if (연면적 <= 200) return set[0]!;
-  if (연면적 <= 1000) return set[1]!;
-  if (연면적 <= 3000) return set[2]!;
-  if (연면적 <= 6000) return set[3]!;
-  return set[4]!;
-}
+export { requiredArea };
 
 const won = (n: number) => `${Math.round(n).toLocaleString("ko-KR")}원`;
 
@@ -21,25 +20,33 @@ interface Props {
 }
 
 export default function ItemDetailModal({ item, ctx, onChange, onClose }: Props) {
-  const c6 = ctx.컨테이너6수 ?? 0;
-  const c9 = ctx.컨테이너9수 ?? 0;
-  const r6 = ctx.임대료6 ?? 0;
-  const r9 = ctx.임대료9 ?? 0;
-  const install = ctx.설치해체비 ?? 0;
-  const transport = ctx.운반비 ?? 0;
-
-  const totalArea = c6 * 18 + c9 * 27;
   const need = requiredArea(item.id, ctx.연면적);
-  const monthlyRent = c6 * r6 + c9 * r9;
-  const rentTotal = monthlyRent * ctx.공사기간;
-  const grandTotal = rentTotal + install + transport;
+  const { count6, count9, auto } = resolveCounts(
+    need,
+    ctx.컨테이너6수 ?? 0,
+    ctx.컨테이너9수 ?? 0,
+  );
+  const r6 = ctx.임대료6 ?? 350000;
+  const r9 = ctx.임대료9 ?? 550000;
+  const mode = ctx.배치방식 ?? "임대형";
+  const etcRows = ctx.기타항목 ?? [];
+  const cost = containerCost(
+    { ...ctx, 임대료6: r6, 임대료9: r9, 배치방식: mode },
+    count6,
+    count9,
+  );
 
-  const steps: Array<[string, string, boolean]> = [
-    ["연면적 ≤ 200", `${requiredArea(item.id, 200)}㎡`, ctx.연면적 <= 200],
-    ["연면적 ≤ 1,000", `${requiredArea(item.id, 1000)}㎡`, ctx.연면적 > 200 && ctx.연면적 <= 1000],
-    ["연면적 ≤ 3,000", `${requiredArea(item.id, 3000)}㎡`, ctx.연면적 > 1000 && ctx.연면적 <= 3000],
-    ["연면적 ≤ 6,000", `${requiredArea(item.id, 6000)}㎡`, ctx.연면적 > 3000 && ctx.연면적 <= 6000],
-    ["연면적 > 6,000", `${requiredArea(item.id, 999999)}㎡`, ctx.연면적 > 6000],
+  const setCount = (key: "컨테이너6수" | "컨테이너9수", v: number) =>
+    onChange({ 컨테이너6수: count6, 컨테이너9수: count9, [key]: Math.max(0, v) });
+
+  const isT3 = item.id === "TEMP-003";
+  const set = isT3 ? [12, 48, 100, 120, 200] : [6, 30, 63, 76, 130];
+  const steps: Array<[string, number, boolean]> = [
+    ["연면적 ≤ 200", set[0]!, ctx.연면적 <= 200],
+    ["연면적 ≤ 1,000", set[1]!, ctx.연면적 > 200 && ctx.연면적 <= 1000],
+    ["연면적 ≤ 3,000", set[2]!, ctx.연면적 > 1000 && ctx.연면적 <= 3000],
+    ["연면적 ≤ 6,000", set[3]!, ctx.연면적 > 3000 && ctx.연면적 <= 6000],
+    ["연면적 > 6,000", set[4]!, ctx.연면적 > 6000],
   ];
 
   const counter = (
@@ -58,7 +65,7 @@ export default function ItemDetailModal({ item, ctx, onChange, onClose }: Props)
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => onChange({ [countKey]: Math.max(0, count - 1) })}
+            onClick={() => setCount(countKey, count - 1)}
             className="flex h-7 w-7 items-center justify-center rounded-md border border-input text-muted-foreground hover:bg-accent"
           >
             <Minus className="h-3.5 w-3.5" />
@@ -67,7 +74,7 @@ export default function ItemDetailModal({ item, ctx, onChange, onClose }: Props)
             {count}
           </span>
           <button
-            onClick={() => onChange({ [countKey]: count + 1 })}
+            onClick={() => setCount(countKey, count + 1)}
             className="flex h-7 w-7 items-center justify-center rounded-md border border-input text-muted-foreground hover:bg-accent"
           >
             <Plus className="h-3.5 w-3.5" />
@@ -75,7 +82,7 @@ export default function ItemDetailModal({ item, ctx, onChange, onClose }: Props)
         </div>
       </div>
       <label className="mt-2 flex items-center gap-2">
-        <span className="text-[11px] text-muted-foreground">월 임대료</span>
+        <span className="whitespace-nowrap text-[11px] text-muted-foreground">월 임대료</span>
         <input
           type="number"
           value={rent}
@@ -113,7 +120,7 @@ export default function ItemDetailModal({ item, ctx, onChange, onClose }: Props)
           </button>
         </div>
 
-        {/* 상단: ProjectContext */}
+        {/* 상단 읽기전용 */}
         <div className="mt-4 grid grid-cols-3 gap-3">
           {[
             ["연면적", `${ctx.연면적.toLocaleString("ko-KR")}㎡`],
@@ -127,70 +134,97 @@ export default function ItemDetailModal({ item, ctx, onChange, onClose }: Props)
           ))}
         </div>
 
-        {/* 중단: requiredArea 계산 과정 */}
+        {/* 중단 수식 */}
         <div className="mt-5 rounded-lg border border-border p-4">
           <h4 className="text-sm font-semibold text-foreground">필요 면적 산출 과정</h4>
-          <code className="mt-2 block rounded bg-muted px-2 py-1.5 font-mono text-[11px] text-foreground">
-            {item.산출식.formula}
+          <code className="mt-2 block rounded bg-muted px-2 py-1.5 font-mono text-[11px] leading-relaxed text-foreground">
+            {isT3
+              ? "IF(연면적 <= 200, 12, IF(<=1000, 48, IF(<=3000, 100, IF(<=6000, 120, 200))))"
+              : "IF(연면적 <= 200, 6, IF(<=1000, 30, IF(<=3000, 63, IF(<=6000, 76, 130))))"}
           </code>
           <ul className="mt-3 space-y-1">
             {steps.map(([cond, val, active]) => (
               <li
                 key={cond}
                 className={`flex justify-between rounded-md px-2.5 py-1.5 text-xs ${
-                  active
-                    ? "bg-primary/10 font-semibold text-primary"
-                    : "text-muted-foreground"
+                  active ? "bg-primary/10 font-semibold text-primary" : "text-muted-foreground"
                 }`}
               >
-                <span>{cond}</span>
-                <span className="tabular-nums">{val}</span>
+                <span>
+                  {cond} {active && "← 현재"}
+                </span>
+                <span className="tabular-nums">{val}㎡</span>
               </li>
             ))}
           </ul>
           <div className="mt-3 flex items-center justify-between border-t border-border pt-3 text-sm">
-            <span className="text-muted-foreground">requiredArea</span>
+            <span className="text-muted-foreground">
+              requiredArea(연면적 {ctx.연면적.toLocaleString("ko-KR")})
+            </span>
             <span className="font-bold text-foreground">{need}㎡</span>
           </div>
         </div>
 
-        {/* 하단: 컨테이너 혼합배치 */}
+        {/* 하단 편집 */}
         <div className="mt-5 space-y-3">
-          <h4 className="text-sm font-semibold text-foreground">컨테이너 혼합배치</h4>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {counter("3.0 × 6.0", 18, c6, r6, "컨테이너6수", "임대료6")}
-            {counter("3.0 × 9.0", 27, c9, r9, "컨테이너9수", "임대료9")}
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-semibold text-foreground">컨테이너 혼합배치</h4>
+            <div className="flex rounded-md border border-input p-0.5">
+              {(["설치형", "임대형"] as const).map((m) => (
+                <button
+                  key={m}
+                  onClick={() => onChange({ 배치방식: m })}
+                  className={`rounded px-3 py-1 text-xs font-medium ${
+                    mode === m
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-accent"
+                  }`}
+                >
+                  {m}
+                </button>
+              ))}
+            </div>
           </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            {counter("3.0 × 6.0", AREA6, count6, r6, "컨테이너6수", "임대료6")}
+            {counter("3.0 × 9.0", AREA9, count9, r9, "컨테이너9수", "임대료9")}
+          </div>
+
           <div
             className={`rounded-lg px-3 py-2 text-xs ${
-              totalArea >= need
+              cost.totalArea >= need
                 ? "bg-chart-2/10 text-chart-2"
                 : "bg-destructive/10 text-destructive"
             }`}
           >
-            totalArea = {c6}×18 + {c9}×27 = <b>{totalArea}㎡</b> / 필요 {need}㎡{" "}
-            {totalArea >= need ? "· 충족" : "· 부족"}
+            totalArea = {count6}×18 + {count9}×27 = <b>{cost.totalArea}㎡</b> / 필요 {need}㎡{" "}
+            {cost.totalArea >= need ? "· 충족" : "· 부족"}
+            {auto && " (자동배치)"}
           </div>
 
           <table className="w-full text-sm">
             <tbody>
-              {[
-                ["월 임대료 합계 (monthlyRent)", won(monthlyRent)],
-                [`임대료 총액 (× ${ctx.공사기간}개월)`, won(rentTotal)],
-              ].map(([k, v]) => (
-                <tr key={k} className="border-b border-border">
-                  <td className="py-2 text-muted-foreground">{k}</td>
-                  <td className="py-2 text-right font-medium tabular-nums text-foreground">
-                    {v}
-                  </td>
-                </tr>
-              ))}
+              <tr className="border-b border-border">
+                <td className="py-2 text-muted-foreground">월 임대료 합계</td>
+                <td className="py-2 text-right font-medium tabular-nums text-foreground">
+                  {won(cost.monthlyRent)}
+                </td>
+              </tr>
+              <tr className="border-b border-border">
+                <td className="py-2 text-muted-foreground">
+                  임대료 총액 {mode === "설치형" ? "(설치형 · 미적용)" : `(× ${ctx.공사기간}개월)`}
+                </td>
+                <td className="py-2 text-right font-medium tabular-nums text-foreground">
+                  {won(cost.rentTotal)}
+                </td>
+              </tr>
               <tr className="border-b border-border">
                 <td className="py-2 text-muted-foreground">설치·해체비</td>
                 <td className="py-2 text-right">
                   <input
                     type="number"
-                    value={install}
+                    value={ctx.설치해체비 ?? 1000000}
                     onChange={(e) => onChange({ 설치해체비: Number(e.target.value) })}
                     className="h-8 w-40 rounded-md border border-input bg-card px-2 text-right text-xs tabular-nums text-foreground outline-none focus:ring-2 focus:ring-ring"
                   />
@@ -201,24 +235,75 @@ export default function ItemDetailModal({ item, ctx, onChange, onClose }: Props)
                 <td className="py-2 text-right">
                   <input
                     type="number"
-                    value={transport}
+                    value={ctx.운반비 ?? 1200000}
                     onChange={(e) => onChange({ 운반비: Number(e.target.value) })}
                     className="h-8 w-40 rounded-md border border-input bg-card px-2 text-right text-xs tabular-nums text-foreground outline-none focus:ring-2 focus:ring-ring"
                   />
                 </td>
               </tr>
+              {etcRows.map((row, i) => (
+                <tr key={i} className="border-b border-border">
+                  <td className="py-2">
+                    <input
+                      value={row.name}
+                      placeholder="기타 항목명"
+                      onChange={(e) =>
+                        onChange({
+                          기타항목: etcRows.map((r, j) =>
+                            j === i ? { ...r, name: e.target.value } : r,
+                          ),
+                        })
+                      }
+                      className="h-8 w-full rounded-md border border-input bg-card px-2 text-xs text-foreground outline-none focus:ring-2 focus:ring-ring"
+                    />
+                  </td>
+                  <td className="py-2 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <input
+                        type="number"
+                        value={row.amount}
+                        onChange={(e) =>
+                          onChange({
+                            기타항목: etcRows.map((r, j) =>
+                              j === i ? { ...r, amount: Number(e.target.value) } : r,
+                            ),
+                          })
+                        }
+                        className="h-8 w-40 rounded-md border border-input bg-card px-2 text-right text-xs tabular-nums text-foreground outline-none focus:ring-2 focus:ring-ring"
+                      />
+                      <button
+                        onClick={() =>
+                          onChange({ 기타항목: etcRows.filter((_, j) => j !== i) })
+                        }
+                        className="rounded-md p-1 text-muted-foreground hover:bg-accent"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
+
+          <button
+            onClick={() => onChange({ 기타항목: [...etcRows, { name: "", amount: 0 }] })}
+            className="inline-flex items-center gap-1 rounded-md border border-input px-2.5 py-1.5 text-xs text-muted-foreground hover:bg-accent"
+          >
+            <Plus className="h-3.5 w-3.5" /> 항목추가
+          </button>
 
           <div className="rounded-xl bg-foreground px-4 py-4 text-background">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs opacity-70">최종 합계 (임대료 + 설치해체 + 운반)</p>
+                <p className="text-xs opacity-70">
+                  최종 합계 (임대료 + 설치해체 + 운반 + 기타)
+                </p>
                 <p className="mt-0.5 text-[11px] opacity-60">
-                  3.0*6.0 x{c6} + 3.0*9.0 x{c9} (totalArea {totalArea}㎡)
+                  3.0*6.0 x{count6} + 3.0*9.0 x{count9} (totalArea {cost.totalArea}㎡)
                 </p>
               </div>
-              <p className="text-xl font-bold tabular-nums">{won(grandTotal)}</p>
+              <p className="text-xl font-bold tabular-nums">{won(cost.totalCost)}</p>
             </div>
           </div>
         </div>
