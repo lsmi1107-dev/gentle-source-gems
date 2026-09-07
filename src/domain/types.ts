@@ -17,7 +17,10 @@ export interface ProjectContext {
   임대료9?: number; // 3.0*9.0 월 임대료(원)
   설치해체비?: number; // 원
   운반비?: number; // 원
+  배치방식?: "설치형" | "임대형";
+  기타항목?: Array<{ name: string; amount: number }>;
 }
+
 
 export interface LineItemFormula {
   formula: string; // e.g. "4 * SQRT(대지면적)"
