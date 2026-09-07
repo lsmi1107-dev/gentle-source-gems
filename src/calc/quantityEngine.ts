@@ -1,5 +1,7 @@
 import type { ProjectContext, BOQLineItem, LineItemFormula } from "../domain/types";
 import { ssotItems, type SSOTItem } from "../ssot/items";
+import { resolveCounts, specLabel } from "./containerPlan";
+
 
 // Tight loop용 수식 평가기 - SSOT만 신뢰
 // 지원: SQRT, CEIL, FLOOR, IF, MAX, MIN, +, -, *, /, 비교
