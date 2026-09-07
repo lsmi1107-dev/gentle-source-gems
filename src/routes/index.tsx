@@ -118,34 +118,49 @@ function Index() {
   };
 
   const downloadXlsx = async () => {
-    const c6 = ctx.컨테이너6수 ?? 0;
-    const c9 = ctx.컨테이너9수 ?? 0;
-    const monthlyRent = c6 * (ctx.임대료6 ?? 0) + c9 * (ctx.임대료9 ?? 0);
-    const rentTotal = monthlyRent * ctx.공사기간;
     const blob = await exportSummarySheet(
       items.map((it) => {
         const isContainer = it.id === "TEMP-001" || it.id === "TEMP-003";
+        if (isContainer) {
+          const need = requiredArea(it.id, ctx.연면적);
+          const { count6, count9 } = resolveCounts(
+            need,
+            ctx.컨테이너6수 ?? 0,
+            ctx.컨테이너9수 ?? 0,
+          );
+          const c = containerCost(ctx, count6, count9);
+          return {
+            code: it.id,
+            name: it.품명,
+            spec: specLabel(count6, count9),
+            unit: it.단위,
+            quantity: 1,
+            matUnit: 0,
+            laborUnit: c.install,
+            expUnit: c.rentTotal + c.transport + c.etc,
+            totalCost: c.totalCost,
+            formula: it.산출식.formula,
+            remark:
+              `${it.비고} ${ctx.배치방식 ?? "임대형"} · 임대료 ${c.monthlyRent.toLocaleString("ko-KR")}원/월 × ${ctx.공사기간}개월`.trim(),
+          };
+        }
         return {
           code: it.id,
           name: it.품명,
           spec: it.규격,
           unit: it.단위,
-          quantity: isContainer
-            ? 1
-            : it.id === "TEMP-007" && it.수량.detail
+          quantity:
+            it.id === "TEMP-007" && it.수량.detail
               ? Number(it.수량.detail.replace(/[^0-9.]/g, "")) || it.수량.value
               : it.수량.value,
           matUnit: it.재료비?.단가 ?? 0,
-          laborUnit: isContainer ? (ctx.설치해체비 ?? 0) : (it.노무비?.단가 ?? 0),
-          expUnit: isContainer
-            ? rentTotal + (ctx.운반비 ?? 0)
-            : (it.경비?.단가 ?? 0),
+          laborUnit: it.노무비?.단가 ?? 0,
+          expUnit: it.경비?.단가 ?? 0,
           formula: it.산출식.formula,
-          remark: isContainer
-            ? `${it.비고} 임대료 ${monthlyRent.toLocaleString("ko-KR")}원/월 × ${ctx.공사기간}개월`.trim()
-            : it.비고,
+          remark: it.비고,
         };
       }),
+
 
       {
         projectName: "Lab Estimate",

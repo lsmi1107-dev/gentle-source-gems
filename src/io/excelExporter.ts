@@ -9,9 +9,11 @@ type LineItem = {
   matUnit: number;
   laborUnit: number;
   expUnit: number;
+  totalCost?: number;
   formula?: string;
   remark?: string;
 };
+
 
 type ProjectContext = {
   projectName: string;
