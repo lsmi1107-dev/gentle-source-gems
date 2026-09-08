@@ -111,7 +111,6 @@ function Index() {
   };
 
   const openEditor = (item: BOQLineItem) => {
-    console.log("[dbg] openEditor", item.id);
     if (item.id === "TEMP-001" || item.id === "TEMP-003") {
       setDetailId(item.id);
       return;
@@ -456,7 +455,6 @@ function Index() {
       </main>
 
       {/* TEMP-001/003 상세 산출 모달 */}
-      {console.log("[dbg] detailId:", detailId) && detailId &&
         (() => {
           const target = items.find((i) => i.id === detailId);
           if (!target) return null;
