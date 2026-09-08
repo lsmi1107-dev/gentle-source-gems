@@ -63,9 +63,16 @@ const DEFAULT_CTX: ProjectContext = {
   최고높이: 60,
   공사기간: 12,
   총공사비: 0,
-  컨테이너6수: 1,
-  컨테이너9수: 1,
+  컨테이너6수: 0,
+  컨테이너9수: 0,
+  임대료6: 350000,
+  임대료9: 550000,
+  설치해체비: 1000000,
+  운반비: 1200000,
+  배치방식: "임대형",
+  기타항목: [],
 };
+
 
 interface FormulaEdit {
   formula: LineItemFormula;
