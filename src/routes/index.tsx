@@ -455,6 +455,7 @@ function Index() {
       </main>
 
       {/* TEMP-001/003 상세 산출 모달 */}
+      {detailId &&
         (() => {
           const target = items.find((i) => i.id === detailId);
           if (!target) return null;
