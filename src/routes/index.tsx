@@ -94,6 +94,37 @@ function Index() {
   const items = useMemo(() => calculateAll(ctx, undefined, overrides), [ctx, overrides]);
   const validation = useMemo(() => validate(ctx, items), [ctx, items]);
 
+  // 내역서 요약시트(Excel 동결 포맷) — TEMP-001/003 전용
+  const freezeRows = useMemo(
+    () =>
+      items
+        .filter((it) => it.id === "TEMP-001" || it.id === "TEMP-003")
+        .map((it, i) => {
+          const { need, label } = areaBreakdown(it.id, ctx.연면적);
+          const { count6, count9 } = resolveCounts(
+            need,
+            ctx.컨테이너6수 ?? 0,
+            ctx.컨테이너9수 ?? 0,
+          );
+          const c = containerCost(ctx, count6, count9);
+          return {
+            no: i + 1,
+            item: it,
+            name: it.id === "TEMP-001" ? "감독자용 사무실" : "도급자용 사무실",
+            spec: `3.0*6.0 x${count6} + 3.0*9.0 x${count9} (${c.totalArea}㎡)`,
+            specSub: `요구 ${need}㎡ / ${label}`,
+            mat: 0,
+            labor: c.install,
+            exp: c.rentTotal + c.transport + c.etc,
+            total: c.totalCost,
+          };
+        }),
+    [items, ctx],
+  );
+  const freezeTotal = freezeRows.reduce((s, r) => s + r.total, 0);
+  const won = (n: number) => `${Math.round(n).toLocaleString("ko-KR")}원`;
+
+
   const areaGrade = determineGradeByArea(ctx.연면적);
   const budgetGrade = determineGradeByBudget(ctx.총공사비 ?? 0);
   const grade = finalGrade(areaGrade, budgetGrade);
