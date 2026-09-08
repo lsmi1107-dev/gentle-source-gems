@@ -13,6 +13,23 @@ export function requiredArea(id: string, 연면적: number): number {
   return set[4]!;
 }
 
+// 2020 표준품셈 2-1-2 건축+기계 합산 근거 표기
+export function areaBreakdown(id: string, 연면적: number) {
+  const isT3 = id === "TEMP-003";
+  const set = isT3 ? [12, 48, 100, 120, 200] : [6, 30, 63, 76, 130];
+  const parts = isT3
+    ? ["6+6", "24+24", "50+50", "60+60", "100+100"]
+    : ["3+3", "12+18", "25+38", "30+46", "50+80"];
+  const idx =
+    연면적 <= 200 ? 0 : 연면적 <= 1000 ? 1 : 연면적 <= 3000 ? 2 : 연면적 <= 6000 ? 3 : 4;
+  const need = set[idx]!;
+  return {
+    need,
+    label: `${parts[idx]}=${need}㎡${idx === 4 ? " @6,000초과" : ""}`,
+  };
+}
+
+
 // count6/count9가 모두 0이면 필요면적 기준 자동 배치
 export function resolveCounts(need: number, c6 = 0, c9 = 0) {
   if (c6 > 0 || c9 > 0) return { count6: c6, count9: c9, auto: false };
