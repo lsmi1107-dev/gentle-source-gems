@@ -53,7 +53,7 @@ export default function ItemDetailModal({
   const setCount = (key: "컨테이너6수" | "컨테이너9수", v: number) =>
     onChange({ 컨테이너6수: count6, 컨테이너9수: count9, [key]: Math.max(0, v) });
 
-  const isT3 = item.id === "TEMP-003";
+  const isT3 = itemId === "TEMP-003";
   const set = isT3 ? [12, 48, 100, 120, 200] : [6, 30, 63, 76, 130];
   const steps: Array<[string, number, boolean]> = [
     ["연면적 ≤ 200", set[0]!, ctx.연면적 <= 200],
