@@ -418,91 +418,135 @@ function Index() {
           </div>
         </section>
 
-        {/* Summary Sheet */}
-        <section className="rounded-xl border border-border bg-card">
-          <div className="flex items-center justify-between border-b border-border px-5 py-4">
-            <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
-              <FileSpreadsheet className="h-4 w-4 text-muted-foreground" />
-              가설공사 Summary Sheet
+        <div className="space-y-5" style={{ fontFamily: "Pretendard, system-ui, sans-serif" }}>
+          {/* PROJECTCONTEXT (READ-ONLY) */}
+          <div className="rounded-2xl border border-border bg-[#F4F5F6] p-5">
+            <h2 className="text-[13px] font-semibold tracking-tight text-foreground">
+              PROJECTCONTEXT (모달에서는 READ-ONLY로 표시)
             </h2>
-            <span className="text-xs text-muted-foreground">
-              {items.length}개 Line Item · SSOT 기반 렌더
-            </span>
+            <div className="mt-3 grid gap-3 sm:grid-cols-3">
+              {[
+                ["본건물 연면적", `${ctx.연면적.toLocaleString("ko-KR")}㎡`],
+                ["건축용도", ctx.건물용도],
+                ["공사기간", `${ctx.공사기간}개월`],
+              ].map(([k, v]) => (
+                <label key={k} className="flex flex-col gap-1.5">
+                  <span className="text-[11px] font-medium text-muted-foreground">{k}</span>
+                  <input
+                    readOnly
+                    value={v}
+                    className="h-10 rounded-xl border border-border bg-card px-3 text-sm font-semibold text-foreground outline-none"
+                  />
+                </label>
+              ))}
+            </div>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border bg-muted/50 text-left text-xs text-muted-foreground">
-                  <th className="px-4 py-3 font-medium">ID</th>
-                  <th className="px-4 py-3 font-medium">품명</th>
-                  <th className="px-4 py-3 font-medium">규격</th>
-                  <th className="px-4 py-3 font-medium">단위</th>
-                  <th className="px-4 py-3 text-right font-medium">수량</th>
-                  <th className="px-4 py-3 font-medium">산출식</th>
-                  <th className="px-4 py-3 font-medium">비고</th>
-                  <th className="px-4 py-3" />
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((item) => {
-                  const isEdited = Boolean(overrides[item.id]);
-                  return (
+
+          {/* 내역서 요약시트 (Excel 동결 포맷) */}
+          <section className="rounded-2xl border border-border bg-card">
+            <div className="flex items-center justify-between border-b border-border px-5 py-4">
+              <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                <FileSpreadsheet className="h-4 w-4 text-muted-foreground" />
+                내역서 요약시트 (Excel 동결 포맷)
+              </h2>
+              <span className="text-xs text-muted-foreground">
+                {sheetRows.length}개 Line Item · SSOT 기반 렌더
+              </span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-muted/50 text-left text-[11px] text-muted-foreground">
+                    <th className="px-3 py-3 font-medium">NO</th>
+                    <th className="px-3 py-3 font-medium">품명</th>
+                    <th className="px-3 py-3 font-medium">규격</th>
+                    <th className="px-3 py-3 font-medium">단위</th>
+                    <th className="px-3 py-3 text-right font-medium">수량</th>
+                    <th className="px-3 py-3 text-right font-medium">재료비</th>
+                    <th className="px-3 py-3 text-right font-medium">노무비</th>
+                    <th className="px-3 py-3 text-right font-medium">경비</th>
+                    <th className="px-3 py-3 text-right font-medium">합계금액</th>
+                    <th className="px-3 py-3 font-medium">비고</th>
+                    <th className="px-3 py-3 font-medium">산출식</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sheetRows.map((row) => (
                     <tr
-                      key={item.id}
+                      key={row.item.id}
                       className="border-b border-border last:border-0 hover:bg-muted/30"
                     >
-                      <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
-                        {item.id}
-                      </td>
-                      <td className="px-4 py-3 font-medium text-foreground">
-                        {item.품명}
-                        {item.수량.value === 0 && (
-                          <span className="ml-2 rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
-                            미해당
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-muted-foreground">{item.규격 || "—"}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{item.단위}</td>
-                      <td className="px-4 py-3 text-right font-semibold tabular-nums text-foreground">
-                        {item.수량.value}
-                      </td>
-                      <td className="max-w-56 px-4 py-3">
-                        <code className="block truncate rounded bg-muted px-1.5 py-0.5 font-mono text-[11px] text-foreground">
-                          {item.산출식.formula}
-                        </code>
-                        <span className="mt-0.5 block text-[10px] text-muted-foreground">
-                          {item.산출식.description}
-                          {item.산출식.edited_at && (
-                            <>
-                              {" "}
-                              · {item.산출식.edited_by} 편집{" "}
-                              {new Date(item.산출식.edited_at).toLocaleString("ko-KR")}
-                            </>
-                          )}
+                      <td className="px-3 py-3 tabular-nums text-muted-foreground">{row.no}</td>
+                      <td className="px-3 py-3 font-medium text-foreground">
+                        {row.name}
+                        <span className="ml-2 font-mono text-[10px] text-muted-foreground">
+                          {row.item.id}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-xs text-muted-foreground">{item.비고 || "—"}</td>
-                      <td className="px-4 py-3">
+                      <td className="whitespace-pre-line px-3 py-3 text-xs text-muted-foreground">
+                        {row.spec}
+                        {row.specSub ? `\n${row.specSub}` : ""}
+                      </td>
+                      <td className="px-3 py-3 text-muted-foreground">{row.item.단위}</td>
+                      <td className="px-3 py-3 text-right font-semibold tabular-nums text-foreground">
+                        {row.qty}
+                      </td>
+                      <td className="px-3 py-3 text-right tabular-nums text-muted-foreground">
+                        {row.mat ? won(row.mat) : "—"}
+                      </td>
+                      <td className="px-3 py-3 text-right tabular-nums text-muted-foreground">
+                        {row.labor ? won(row.labor) : "—"}
+                      </td>
+                      <td className="px-3 py-3 text-right tabular-nums text-muted-foreground">
+                        {row.exp ? won(row.exp) : "—"}
+                      </td>
+                      <td className="px-3 py-3 text-right font-semibold tabular-nums text-foreground">
+                        {row.total ? won(row.total) : "—"}
+                      </td>
+                      <td className="px-3 py-3 text-xs text-muted-foreground">{row.remark}</td>
+                      <td className="px-3 py-3">
                         <button
-                          onClick={() => openEditor(item)}
-                          className={`inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs transition-colors ${
-                            isEdited
-                              ? "border-primary bg-primary/10 text-primary"
-                              : "border-input text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                          }`}
+                          onClick={() => openEditor(row.item)}
+                          className="inline-flex items-center gap-1 rounded-full bg-foreground px-3 py-1 text-[11px] font-medium text-background transition-opacity hover:opacity-85"
                         >
                           <Pencil className="h-3 w-3" />
-                          {isEdited ? "편집됨" : "산출식"}
+                          산출식
                         </button>
                       </td>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr className="bg-muted/40">
+                    <td colSpan={8} className="px-3 py-3 text-right text-xs font-semibold text-muted-foreground">
+                      합계
+                    </td>
+                    <td className="px-3 py-3 text-right text-sm font-bold tabular-nums text-foreground">
+                      {won(sheetTotal)}
+                    </td>
+                    <td colSpan={2} />
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </section>
+
+          {/* 근거 배지 */}
+          <div className="flex flex-wrap gap-2">
+            {[
+              "근거: 2020 표준품셈 2-1-2 건축+기계 합산",
+              "TEMP-001: 25+38=63㎡@3,000 / 50+80=130㎡@6,000초과",
+              "TEMP-003: 50+50=100㎡@3,000 / 100+100=200㎡@6,000초과",
+            ].map((t) => (
+              <span
+                key={t}
+                className="rounded-full border border-border bg-[#F4F5F6] px-3 py-1.5 text-[11px] text-muted-foreground"
+              >
+                {t}
+              </span>
+            ))}
           </div>
-        </section>
+        </div>
       </main>
 
       {/* TEMP-001/003 상세 산출 모달 */}
