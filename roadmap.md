@@ -8,3 +8,10 @@
 - [x] excelExporter: 규격 specLabel + 합계 단가/금액 totalCost 반영 (0원 버그)
 - [x] 기본 컨텍스트: 임대료 350000/550000, 설치해체비 1000000, 운반비 1200000
 - [x] 모달 미표시 버그 수정 (stale dev-server 번들 + 디버그 sed 손상 복구) — 브라우저 검증 통과
+
+## 2026-09-10 메인 화면 개편
+- [x] 상단 PROJECTCONTEXT read-only 카드 (연면적/건축용도/공사기간)
+- [x] 내역서 요약시트 (Excel 동결 포맷) 11컬럼 · 8개 Line Item · 합계행
+- [x] 규격 2줄 포맷(혼합배치 + 요구면적 근거), 자동배치 count6=ceil((need-27)/18)
+- [x] 산출식 검은 pill 버튼 → TEMP-001/003 ItemDetailModal
+- [x] 하단 근거 배지 3종, Pretendard 적용

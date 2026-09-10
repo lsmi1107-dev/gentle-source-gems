@@ -461,7 +461,7 @@ function Index() {
               </span>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full min-w-[1080px] text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/50 text-left text-[11px] text-muted-foreground">
                     <th className="px-3 py-3 font-medium">NO</th>
