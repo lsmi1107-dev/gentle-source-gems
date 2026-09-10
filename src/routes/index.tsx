@@ -94,12 +94,12 @@ function Index() {
   const items = useMemo(() => calculateAll(ctx, undefined, overrides), [ctx, overrides]);
   const validation = useMemo(() => validate(ctx, items), [ctx, items]);
 
-  // 내역서 요약시트(Excel 동결 포맷) — TEMP-001/003 전용
-  const freezeRows = useMemo(
+  // 내역서 요약시트 (Excel 동결 포맷) — 8개 Line Item 전부
+  const sheetRows = useMemo(
     () =>
-      items
-        .filter((it) => it.id === "TEMP-001" || it.id === "TEMP-003")
-        .map((it, i) => {
+      items.map((it, i) => {
+        const isContainer = it.id === "TEMP-001" || it.id === "TEMP-003";
+        if (isContainer) {
           const { need, label } = areaBreakdown(it.id, ctx.연면적);
           const { count6, count9 } = resolveCounts(
             need,
@@ -110,18 +110,36 @@ function Index() {
           return {
             no: i + 1,
             item: it,
+            isContainer: true,
             name: it.id === "TEMP-001" ? "감독자용 사무실" : "도급자용 사무실",
             spec: `3.0*6.0 x${count6} + 3.0*9.0 x${count9} (${c.totalArea}㎡)`,
             specSub: `요구 ${need}㎡ / ${label}`,
+            qty: 1,
             mat: 0,
             labor: c.install,
             exp: c.rentTotal + c.transport + c.etc,
             total: c.totalCost,
+            remark: `${ctx.공사기간}개월`,
           };
-        }),
+        }
+        return {
+          no: i + 1,
+          item: it,
+          isContainer: false,
+          name: it.품명,
+          spec: it.규격 || "—",
+          specSub: it.수량.detail ?? "",
+          qty: it.수량.value,
+          mat: it.재료비?.금액 ?? 0,
+          labor: it.노무비?.금액 ?? 0,
+          exp: it.경비?.금액 ?? 0,
+          total: (it.재료비?.금액 ?? 0) + (it.노무비?.금액 ?? 0) + (it.경비?.금액 ?? 0),
+          remark: it.비고 || "—",
+        };
+      }),
     [items, ctx],
   );
-  const freezeTotal = freezeRows.reduce((s, r) => s + r.total, 0);
+  const sheetTotal = sheetRows.reduce((s, r) => s + r.total, 0);
   const won = (n: number) => `${Math.round(n).toLocaleString("ko-KR")}원`;
 
 
