@@ -15,17 +15,31 @@ const won = (n: number) => `${Math.round(n).toLocaleString("ko-KR")}원`;
 interface Props {
   item: BOQLineItem;
   ctx: ProjectContext;
+  /** ctx 별칭 (Drop-in 용) */
+  projectContext?: ProjectContext;
+  /** TEMP-001 | TEMP-003 */
+  itemType?: "TEMP-001" | "TEMP-003";
   onChange: (patch: Partial<ProjectContext>) => void;
   onClose: () => void;
 }
 
-export default function ItemDetailModal({ item, ctx, onChange, onClose }: Props) {
-  const need = requiredArea(item.id, ctx.연면적);
+export default function ItemDetailModal({
+  item,
+  ctx: ctxProp,
+  projectContext,
+  itemType,
+  onChange,
+  onClose,
+}: Props) {
+  const ctx = ctxProp ?? projectContext!;
+  const itemId = itemType ?? item.id;
+  const need = requiredArea(itemId, ctx.연면적);
   const { count6, count9, auto } = resolveCounts(
     need,
     ctx.컨테이너6수 ?? 0,
     ctx.컨테이너9수 ?? 0,
   );
+
   const r6 = ctx.임대료6 ?? 350000;
   const r9 = ctx.임대료9 ?? 550000;
   const mode = ctx.배치방식 ?? "임대형";
