@@ -11,11 +11,7 @@ import {
   History,
 } from "lucide-react";
 import type { ProjectContext, LineItemFormula, BOQLineItem } from "../domain/types";
-import {
-  determineGradeByArea,
-  determineGradeByBudget,
-  finalGrade,
-} from "../domain/types";
+import { determineGradeByArea, determineGradeByBudget, finalGrade } from "../domain/types";
 import { calculateAll } from "../calc/quantityEngine";
 import { validate, ratchetCheck, snapshot } from "../validation/ratchet";
 import { exportSummarySheet } from "../io/excelExporter";
@@ -27,8 +23,6 @@ import {
   resolveCounts,
   specLabel,
 } from "../calc/containerPlan";
-
-
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -54,7 +48,6 @@ export const Route = createFileRoute("/")({
         href: "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css",
       },
     ],
-
   }),
   component: Index,
 });
@@ -82,7 +75,6 @@ const DEFAULT_CTX: ProjectContext = {
   기타항목: [],
 };
 
-
 interface FormulaEdit {
   formula: LineItemFormula;
 }
@@ -94,9 +86,7 @@ function Index() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [detailId, setDetailId] = useState<string | null>(null);
   const prevSnapshot = useRef<BOQLineItem[] | null>(null);
-  const [changes, setChanges] = useState<
-    ReturnType<typeof ratchetCheck>
-  >([]);
+  const [changes, setChanges] = useState<ReturnType<typeof ratchetCheck>>([]);
 
   const items = useMemo(() => calculateAll(ctx, undefined, overrides), [ctx, overrides]);
   const validation = useMemo(() => validate(ctx, items), [ctx, items]);
@@ -148,7 +138,6 @@ function Index() {
   );
   const sheetTotal = sheetRows.reduce((s, r) => s + r.total, 0);
   const won = (n: number) => `${Math.round(n).toLocaleString("ko-KR")}원`;
-
 
   const areaGrade = determineGradeByArea(ctx.연면적);
   const budgetGrade = determineGradeByBudget(ctx.총공사비 ?? 0);
@@ -233,7 +222,6 @@ function Index() {
         };
       }),
 
-
       {
         projectName: "Lab Estimate",
         siteArea: ctx.대지면적,
@@ -253,11 +241,7 @@ function Index() {
     URL.revokeObjectURL(url);
   };
 
-  const numInput = (
-    label: string,
-    key: keyof ProjectContext,
-    suffix: string,
-  ) => (
+  const numInput = (label: string, key: keyof ProjectContext, suffix: string) => (
     <label className="flex flex-col gap-1.5">
       <span className="text-xs font-medium text-muted-foreground">{label}</span>
       <div className="flex items-center gap-2">
@@ -281,12 +265,8 @@ function Index() {
               <Building2 className="h-5 w-5 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-base font-semibold text-foreground">
-                가설공사 자동산출
-              </h1>
-              <p className="text-xs text-muted-foreground">
-                SSOT: src/ssot/items.ssot.yaml · v3
-              </p>
+              <h1 className="text-base font-semibold text-foreground">가설공사 자동산출</h1>
+              <p className="text-xs text-muted-foreground">SSOT: src/ssot/items.ssot.yaml · v3</p>
             </div>
           </div>
           <button
@@ -350,8 +330,7 @@ function Index() {
                 {numInput("컨테이너 3.0×9.0 (27㎡)", "컨테이너9수", "동")}
               </div>
               <p className="rounded-md bg-muted px-2.5 py-1.5 text-[11px] text-muted-foreground">
-                혼합배치 totalArea ={" "}
-                {(ctx.컨테이너6수 ?? 0) * 18 + (ctx.컨테이너9수 ?? 0) * 27}㎡
+                혼합배치 totalArea = {(ctx.컨테이너6수 ?? 0) * 18 + (ctx.컨테이너9수 ?? 0) * 27}㎡
               </p>
             </div>
           </div>
@@ -525,7 +504,10 @@ function Index() {
                 </tbody>
                 <tfoot>
                   <tr className="bg-muted/40">
-                    <td colSpan={8} className="px-3 py-3 text-right text-xs font-semibold text-muted-foreground">
+                    <td
+                      colSpan={8}
+                      className="px-3 py-3 text-right text-xs font-semibold text-muted-foreground"
+                    >
                       합계
                     </td>
                     <td className="px-3 py-3 text-right text-sm font-bold tabular-nums text-foreground">
@@ -571,8 +553,6 @@ function Index() {
           );
         })()}
 
-
-
       {/* 산출식 편집 모달 */}
       {editingId && editing && (
         <div
@@ -587,8 +567,8 @@ function Index() {
               산출식 편집 — <span className="font-mono text-sm">{editingId}</span>
             </h3>
             <p className="mt-1 text-xs text-muted-foreground">
-              지원 함수: SQRT, CEIL, FLOOR, IF, MAX, MIN · 변수: 대지면적, 연면적,
-              지상층수, 지하층수, 최고높이, 공사기간, 건물외주
+              지원 함수: SQRT, CEIL, FLOOR, IF, MAX, MIN · 변수: 대지면적, 연면적, 지상층수,
+              지하층수, 최고높이, 공사기간, 건물외주
             </p>
             <div className="mt-4 space-y-4">
               <label className="flex flex-col gap-1.5">

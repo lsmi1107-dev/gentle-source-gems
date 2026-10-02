@@ -1,12 +1,6 @@
 import { Minus, Plus, Trash2, X } from "lucide-react";
 import type { BOQLineItem, ProjectContext } from "../domain/types";
-import {
-  AREA6,
-  AREA9,
-  containerCost,
-  requiredArea,
-  resolveCounts,
-} from "../calc/containerPlan";
+import { AREA6, AREA9, containerCost, requiredArea, resolveCounts } from "../calc/containerPlan";
 
 export { requiredArea };
 
@@ -34,21 +28,13 @@ export default function ItemDetailModal({
   const ctx = ctxProp ?? projectContext!;
   const itemId = itemType ?? item.id;
   const need = requiredArea(itemId, ctx.연면적);
-  const { count6, count9, auto } = resolveCounts(
-    need,
-    ctx.컨테이너6수 ?? 0,
-    ctx.컨테이너9수 ?? 0,
-  );
+  const { count6, count9, auto } = resolveCounts(need, ctx.컨테이너6수 ?? 0, ctx.컨테이너9수 ?? 0);
 
   const r6 = ctx.임대료6 ?? 350000;
   const r9 = ctx.임대료9 ?? 550000;
   const mode = ctx.배치방식 ?? "임대형";
   const etcRows = ctx.기타항목 ?? [];
-  const cost = containerCost(
-    { ...ctx, 임대료6: r6, 임대료9: r9, 배치방식: mode },
-    count6,
-    count9,
-  );
+  const cost = containerCost({ ...ctx, 임대료6: r6, 임대료9: r9, 배치방식: mode }, count6, count9);
 
   const setCount = (key: "컨테이너6수" | "컨테이너9수", v: number) =>
     onChange({ 컨테이너6수: count6, 컨테이너9수: count9, [key]: Math.max(0, v) });
@@ -286,9 +272,7 @@ export default function ItemDetailModal({
                         className="h-8 w-40 rounded-md border border-input bg-card px-2 text-right text-xs tabular-nums text-foreground outline-none focus:ring-2 focus:ring-ring"
                       />
                       <button
-                        onClick={() =>
-                          onChange({ 기타항목: etcRows.filter((_, j) => j !== i) })
-                        }
+                        onClick={() => onChange({ 기타항목: etcRows.filter((_, j) => j !== i) })}
                         className="rounded-md p-1 text-muted-foreground hover:bg-accent"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -310,9 +294,7 @@ export default function ItemDetailModal({
           <div className="rounded-xl bg-foreground px-4 py-4 text-background">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs opacity-70">
-                  최종 합계 (임대료 + 설치해체 + 운반 + 기타)
-                </p>
+                <p className="text-xs opacity-70">최종 합계 (임대료 + 설치해체 + 운반 + 기타)</p>
                 <p className="mt-0.5 text-[11px] opacity-60">
                   3.0*6.0 x{count6} + 3.0*9.0 x{count9} (totalArea {cost.totalArea}㎡)
                 </p>
