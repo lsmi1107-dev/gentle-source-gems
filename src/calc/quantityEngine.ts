@@ -2,7 +2,6 @@ import type { ProjectContext, BOQLineItem, LineItemFormula } from "../domain/typ
 import { ssotItems, type SSOTItem } from "../ssot/items";
 import { resolveCounts, specLabel } from "./containerPlan";
 
-
 // Tight loop용 수식 평가기 - SSOT만 신뢰
 // 지원: SQRT, CEIL, FLOOR, IF, MAX, MIN, +, -, *, /, 비교
 export function evalFormula(formula: string, ctx: ProjectContext): number {
@@ -12,17 +11,8 @@ export function evalFormula(formula: string, ctx: ProjectContext): number {
   const MAX = Math.max;
   const MIN = Math.min;
   const IF = (cond: boolean, t: number, f: number) => (cond ? t : f);
-  const {
-    대지면적,
-    연면적,
-    지상층수,
-    지하층수,
-    최고높이,
-    공사기간,
-    건물외주 = 0,
-  } = ctx;
+  const { 대지면적, 연면적, 지상층수, 지하층수, 최고높이, 공사기간, 건물외주 = 0 } = ctx;
   try {
-    // eslint-disable-next-line no-eval
     return eval(formula);
   } catch (e) {
     console.warn(`Formula eval failed: ${formula}`, e);
@@ -41,15 +31,11 @@ export function calculateAll(
     let detail = "";
     let qty = 1;
     let 규격 = item.규격;
-    let 비고 = item.비고;
+    const 비고 = item.비고;
     if (item.id === "TEMP-001" || item.id === "TEMP-003") {
       // 컨테이너 혼합배치: 3.0*6.0(18㎡) + 3.0*9.0(27㎡)
       const need = Number.isNaN(val) ? 0 : val;
-      const { count6, count9 } = resolveCounts(
-        need,
-        ctx.컨테이너6수 ?? 0,
-        ctx.컨테이너9수 ?? 0,
-      );
+      const { count6, count9 } = resolveCounts(need, ctx.컨테이너6수 ?? 0, ctx.컨테이너9수 ?? 0);
       규격 = specLabel(count6, count9);
       qty = 1;
       return {

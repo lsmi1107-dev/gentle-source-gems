@@ -1,4 +1,3 @@
-
 // 1급 시민 - SSOT 기반 도메인
 export interface ProjectContext {
   대지면적: number; // m²
@@ -20,7 +19,6 @@ export interface ProjectContext {
   배치방식?: "설치형" | "임대형";
   기타항목?: Array<{ name: string; amount: number }>;
 }
-
 
 export interface LineItemFormula {
   formula: string; // e.g. "4 * SQRT(대지면적)"

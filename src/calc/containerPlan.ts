@@ -4,8 +4,7 @@ export const AREA6 = 18;
 export const AREA9 = 27;
 
 export function requiredArea(id: string, 연면적: number): number {
-  const set =
-    id === "TEMP-003" ? [12, 48, 100, 120, 200] : [6, 30, 63, 76, 130];
+  const set = id === "TEMP-003" ? [12, 48, 100, 120, 200] : [6, 30, 63, 76, 130];
   if (연면적 <= 200) return set[0]!;
   if (연면적 <= 1000) return set[1]!;
   if (연면적 <= 3000) return set[2]!;
@@ -20,15 +19,13 @@ export function areaBreakdown(id: string, 연면적: number) {
   const parts = isT3
     ? ["6+6", "24+24", "50+50", "60+60", "100+100"]
     : ["3+3", "12+18", "25+38", "30+46", "50+80"];
-  const idx =
-    연면적 <= 200 ? 0 : 연면적 <= 1000 ? 1 : 연면적 <= 3000 ? 2 : 연면적 <= 6000 ? 3 : 4;
+  const idx = 연면적 <= 200 ? 0 : 연면적 <= 1000 ? 1 : 연면적 <= 3000 ? 2 : 연면적 <= 6000 ? 3 : 4;
   const need = set[idx]!;
   return {
     need,
     label: `${parts[idx]}=${need}㎡${idx === 4 ? " @6,000초과" : ""}`,
   };
 }
-
 
 // count6/count9가 모두 0이면 필요면적 기준 자동 배치
 export function resolveCounts(need: number, c6 = 0, c9 = 0) {
@@ -45,8 +42,7 @@ export function specLabel(count6: number, count9: number) {
 
 export function containerCost(ctx: ProjectContext, count6: number, count9: number) {
   const monthlyRent = count6 * (ctx.임대료6 ?? 0) + count9 * (ctx.임대료9 ?? 0);
-  const rentTotal =
-    ctx.배치방식 === "설치형" ? 0 : monthlyRent * ctx.공사기간;
+  const rentTotal = ctx.배치방식 === "설치형" ? 0 : monthlyRent * ctx.공사기간;
   const install = ctx.설치해체비 ?? 0;
   const transport = ctx.운반비 ?? 0;
   const etc = (ctx.기타항목 ?? []).reduce((s, e) => s + (e.amount || 0), 0);
