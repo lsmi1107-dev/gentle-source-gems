@@ -16,8 +16,11 @@ export interface ProjectContext {
   임대료9?: number; // 3.0*9.0 월 임대료(원)
   설치해체비?: number; // 원
   운반비?: number; // 원
-  배치방식?: "설치형" | "임대형";
+  배치방식?: "설치형" | "임대형"; // 설치형은 추후 구현 — 현재 항상 임대형
   기타항목?: Array<{ name: string; amount: number }>;
+  산출단계?: "1단계" | "2단계"; // 1단계=연면적 가견적, 2단계=직접노무비 품셈
+  직접노무비?: number; // 원 (2단계 품셈 2-1-2 기준)
+  컨테이너배치?: Partial<Record<string, { count6: number; count9: number }>>; // 항목별 수동 배치
 }
 
 export interface LineItemFormula {
