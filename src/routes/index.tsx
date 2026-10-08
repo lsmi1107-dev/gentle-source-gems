@@ -95,33 +95,28 @@ function Index() {
   const sheetRows = useMemo(
     () =>
       items.map((it, i) => {
-        const isContainer = it.id === "TEMP-001" || it.id === "TEMP-003";
-        if (isContainer) {
-          const { need, label } = areaBreakdown(it.id, ctx.연면적);
-          const { count6, count9 } = resolveCounts(
-            need,
-            ctx.컨테이너6수 ?? 0,
-            ctx.컨테이너9수 ?? 0,
-          );
-          const c = containerCost(ctx, count6, count9);
+        if (isContainerItem(it.id)) {
+          const p = planFor(it.id, ctx);
           return {
             no: i + 1,
             item: it,
+            code: LINE_CODE[it.id],
             isContainer: true,
-            name: it.id === "TEMP-001" ? "감독자용 사무실" : "도급자용 사무실",
-            spec: `3.0*6.0 x${count6} + 3.0*9.0 x${count9} (${c.totalArea}㎡)`,
-            specSub: `요구 ${need}㎡ / ${label}`,
+            name: it.품명,
+            spec: `3.0*6.0 x${p.count6} + 3.0*9.0 x${p.count9} (${p.totalArea}㎡)`,
+            specSub: `요구 ${p.need}㎡ · ${ctx.산출단계 ?? "1단계"}${p.ok ? "" : " · 부족"}`,
             qty: 1,
             mat: 0,
-            labor: c.install,
-            exp: c.rentTotal + c.transport + c.etc,
-            total: c.totalCost,
-            remark: `${ctx.공사기간}개월`,
+            labor: p.install,
+            exp: p.rentTotal + p.transport + p.etc,
+            total: p.totalCost,
+            remark: `임대형 · ${ctx.공사기간}개월`,
           };
         }
         return {
           no: i + 1,
           item: it,
+          code: it.id,
           isContainer: false,
           name: it.품명,
           spec: it.규격 || "—",
@@ -158,7 +153,7 @@ function Index() {
   };
 
   const openEditor = (item: BOQLineItem) => {
-    if (item.id === "TEMP-001" || item.id === "TEMP-003") {
+    if (isContainerItem(item.id)) {
       setDetailId(item.id);
       return;
     }
@@ -181,28 +176,21 @@ function Index() {
   const downloadXlsx = async () => {
     const blob = await exportSummarySheet(
       items.map((it) => {
-        const isContainer = it.id === "TEMP-001" || it.id === "TEMP-003";
-        if (isContainer) {
-          const need = requiredArea(it.id, ctx.연면적);
-          const { count6, count9 } = resolveCounts(
-            need,
-            ctx.컨테이너6수 ?? 0,
-            ctx.컨테이너9수 ?? 0,
-          );
-          const c = containerCost(ctx, count6, count9);
+        if (isContainerItem(it.id)) {
+          const p = planFor(it.id, ctx);
           return {
-            code: it.id,
+            code: LINE_CODE[it.id],
             name: it.품명,
-            spec: specLabel(count6, count9),
+            spec: specOf(p),
             unit: it.단위,
             quantity: 1,
             matUnit: 0,
-            laborUnit: c.install,
-            expUnit: c.rentTotal + c.transport + c.etc,
-            totalCost: c.totalCost,
+            laborUnit: p.install,
+            expUnit: p.rentTotal + p.transport + p.etc,
+            totalCost: p.totalCost,
             formula: it.산출식.formula,
             remark:
-              `${it.비고} ${ctx.배치방식 ?? "임대형"} · 임대료 ${c.monthlyRent.toLocaleString("ko-KR")}원/월 × ${ctx.공사기간}개월`.trim(),
+              `${it.비고} 임대형 · ${ctx.산출단계 ?? "1단계"} 요구 ${p.need}㎡ · 임대료 ${p.monthlyRent.toLocaleString("ko-KR")}원/월 × ${ctx.공사기간}개월`.trim(),
           };
         }
         return {
