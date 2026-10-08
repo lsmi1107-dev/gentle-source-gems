@@ -16,13 +16,7 @@ import { calculateAll } from "../calc/quantityEngine";
 import { validate, ratchetCheck, snapshot } from "../validation/ratchet";
 import { exportSummarySheet } from "../io/excelExporter";
 import ItemDetailModal from "../components/ItemDetailModal";
-import {
-  areaBreakdown,
-  containerCost,
-  requiredArea,
-  resolveCounts,
-  specLabel,
-} from "../calc/containerPlan";
+import { isContainerItem, LINE_CODE, planFor, specOf } from "../lib/standardEstimate";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -454,7 +448,7 @@ function Index() {
                       <td className="px-3 py-3 font-medium text-foreground">
                         {row.name}
                         <span className="ml-2 font-mono text-[10px] text-muted-foreground">
-                          {row.item.id}
+                          {row.code}
                         </span>
                       </td>
                       <td className="whitespace-pre-line px-3 py-3 text-xs text-muted-foreground">
@@ -511,9 +505,9 @@ function Index() {
           {/* 근거 배지 */}
           <div className="flex flex-wrap gap-2">
             {[
-              "근거: 2020 표준품셈 2-1-2 건축+기계 합산",
-              "TEMP-001: 25+38=63㎡@3,000 / 50+80=130㎡@6,000초과",
-              "TEMP-003: 50+50=100㎡@3,000 / 100+100=200㎡@6,000초과",
+              "1단계: 연면적 가견적 6/30/63/76/130㎡",
+              "2단계: 표준품셈 2-1-2 직접노무비 기준 (가설물 제외)",
+              "TEMP-B01 감독 / B03 도급 / B02 창고 · 3.0x6.0+3.0x9.0 자동최적화",
             ].map((t) => (
               <span
                 key={t}
